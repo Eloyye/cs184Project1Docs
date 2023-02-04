@@ -27,19 +27,19 @@
         </div>
     </div>
 
-    <div class="mt-10 bg-slate-300 p-5 rounded-lg ">
+    <div class="mt-10 bg-slate-300 p-5 rounded-lg max-w-3xl">
         <div class="text-3xl font-bold mb-3">
             Section I: Rasterization
         </div>
-        <div class="lg:flex gap-10 center">
-            <div class="mt-5 mb-5 bg-slate-400 p-5 rounded flex flex-col items-center gap-5">
+        <div class="">
+            <div class="mt-5 mb-5 bg-slate-400 p-5 rounded flex flex-col items-center gap-5 float-left mr-5 max-w-lg">
                 <img src="public/images/section1test6.png" class="rounded-lg max-w-lg max-h-lg lg:max-w-sm">
-                <div>
+                <div class="max-w-lg">
                     This is from a build and a result of the rasterization of triangles.
                     Here, we can see in the PixelTool that there exists some aliasing, jaggies in fact, when sampling.
                 </div>
             </div>
-            <div class="text-xl">
+            <p class="text-xl">
                 To rasterize a simple triangle from three given 2-dimensional vertices,
                 we first need to find the triangle's bounding box such that we can sample the required domain rather than the
                 entire framebuffer. This is done by taking the minimum x and y values as a starting point and floor it to map it
@@ -47,7 +47,7 @@
                 goes beyond the triangle's bounds. Then once we sample for each point in the bounding box, each point (adjusted to the center
                 by adding an offset of 0.5 to both x and y points) are then tested whether or not they lie inside the triangle via
                 the three line test. If the point passes the three-line test, then we fill the pixel.
-            </div>
+            </p>
         </div>
 
     </div>

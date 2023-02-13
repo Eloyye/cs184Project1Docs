@@ -25,7 +25,7 @@
             </div>
 
         </div>
-    <div class="mt-8 bg-zinc-100 p-5 rounded-lg lg:flex lg:flex-row justify-between gap-10 md:flex-col max-w-5xl">
+    <div class="mt-8 bg-zinc-100 p-5 rounded-lg lg:flex lg:flex-row justify-between gap-10 md:flex-col max-w-6xl">
         <div class="text-3xl font-bold">
             Overview
         </div>
@@ -36,7 +36,7 @@
         triangle at a high resolution and then downsample in order to reduce aliasing by blurring. The third task we
         implemented transforms for translation, scaling, and rotation which are basic primitives that allows things
         like perspective camera, animation, etc. The fourth is rasterizing a triangle by interpolating the pixels inside
-        the triangle through barymetric interpolation of three given points. The application of barycentric interpolation
+        the triangle through barycentric interpolation of three given points. The application of barycentric interpolation
         is important for the mapping between pixel space and the texture space in the fifth task where we implemented
         pixel sampling for texture mapping. Then the textures are sampled in either the nearest texel or interpolated
         called bilinear interpolation. It is optimal to try and save as much space as possible, so level mipmapping are
@@ -45,7 +45,7 @@
 
     </div>
 
-    <div class="mt-10 bg-slate-300 p-5 rounded-lg max-w-5xl">
+    <div class="mt-10 bg-slate-300 p-5 rounded-lg max-w-6xl">
         <div class="text-3xl font-bold mb-3">
             Section I: Rasterization
         </div>
@@ -70,7 +70,7 @@
 
     </div>
 
-        <div class="mt-10 bg-slate-300 p-5 rounded-lg max-w-5xl">
+        <div class="mt-10 bg-slate-300 p-5 rounded-lg max-w-6xl">
             <div class="text-3xl font-bold mb-3">
                 Section II: Antialiasing by Supersampling
             </div>
@@ -84,12 +84,12 @@
             </div>
         </div>
 
-        <div class="mt-10 bg-slate-300 p-5 rounded-lg max-w-5xl">
+        <div class="mt-10 bg-slate-300 p-5 rounded-lg max-w-6xl">
             <div class="text-3xl font-bold mb-3">
                 Section III: Transforms
             </div>
             <div class="flex flex-col items-center">
-                <img src="public/images/section2.png" alt="cubeman jump" class="mt-5 mb-5 bg-slate-100 p-5 rounded flex flex-col items-center gap-5 mr-5 max-w-lg">
+                <img src="public/images/section2.png" alt="cubeman jump" class="mt-5 mb-5 bg-slate-100 p-5 rounded flex flex-col items-center gap-5 mr-5">
                 <p class="text-xl">
                     This section is about the implementation of transform operations:
                     translate, scale, and rotate. In my cubeman, I have essentially changed the head, the arms,
@@ -104,7 +104,7 @@
             </div>
         </div>
 
-        <div class="mt-10 bg-slate-300 p-5 rounded-lg max-w-5xl">
+        <div class="mt-10 bg-slate-300 p-5 rounded-lg max-w-6xl">
             <div class="text-3xl font-bold mb-3">
                 Section IV: Barycentric coordinates
             </div>
@@ -118,21 +118,97 @@
             </div>
         </div>
 
-        <div class="mt-10 bg-slate-300 p-5 rounded-lg max-w-5xl">
+        <div class="mt-10 bg-slate-300 p-5 rounded-lg max-w-6xl">
             <div class="text-3xl font-bold mb-3">
                 Section V: "Pixel sampling" for texture mapping
             </div>
             <div class="">
-                <div class="mt-5 mb-5 bg-slate-100 p-5 rounded flex flex-col items-center gap-5 float-left mr-5 max-w-lg">
-                    <!--                    img-->
+                <div class="grid grid-cols-2 grid-rows-2 gap-5 mb-5">
+                    <div class="p-5 bg-slate-100 rounded-lg">
+                        <img src="public/images/pixelNearest1.png" alt="pixel nearest 1x ss" class="rounded-lg">
+                        <p class="mt-2 text-sm">
+                            This is the Nearest Neighbor Pixel Sampling method with 1 sample per pixel. IN this
+                            sampling method, artifacts and aliasing are most prominent. You can observe that the latitude
+                            and longtitude markings are all cutoff.
+                        </p>
+                    </div>
+                    <div class="p-5 bg-slate-100 rounded-lg">
+                        <img src="public/images/pixelNearest16.png" alt="pixel nearest 16x ss" class="rounded-lg">
+                        <p class="mt-2 text-sm">
+                            This is the Nearest Neighbor Pixel Sampling method with 16 sample per pixel. In this
+                            sampling method, artifacts and aliasing are pretty much non-existent due to applied
+                            antialiasing.
+                        </p>
+                    </div>
+                    <div class="p-5 bg-slate-100 rounded-lg">
+                        <img src="public/images/pixelBilinear1.png" alt="pixel bilinear 1x ss" class="rounded-lg">
+                        <p class="mt-2 text-sm">
+                            This is the bilinear Pixel Sampling method. This sampling method is yields less visible artifacts than the Nearest neighbor pixel sampling
+                            at 1 sample per pixel. The level of fidelity and detail is somewhat on par with the top right sampling method.
+                        </p>
+                    </div>
+                    <div class="p-5 bg-slate-100 rounded-lg">
+                        <img src="public/images/pixelBilinear16.png" alt="pixel bilinear 16x ss" class="rounded-lg">
+                        <p class="mt-2 text-sm">
+                            This is the Bilinear Sampling method with 16 sample per pixel. In this
+                            sampling method, artifacts and aliasing are reduced to a minimum and there is a
+                            slight difference in that it is more blurred than the bilinear 1 sample per pixel sampling
+                            method.
+                        </p>
+                    </div>
                 </div>
-                <p class="text-xl">
-
+                <div class="p-5 bg-slate-100 rounded-lg mb-5">
+                    For 1 sample per pixel, i.e no supersampling, then we can see that bilinear filtering is clear winner
+                    and the biggest difference between the two pixel sampling method because in the case of nearest neighbors,
+                    we are still sampling too much to the point where artifacts and aliasing still occurs. For bilinear
+                    filtering, it is similar to applying a box filter in that the process of interpolating reduces high
+                    frequency signals in sampling the texture.
+                </div>
+                <h1 class="font-semibold text-2xl">
+                    What is Pixel Sampling?
+                </h1>
+                <p>
+                    Pixel Sampling is essentially rendering an object and have its pixels correspond to a
+                    texture image that is then embedded to the object which gets displayed.
                 </p>
+                <h1 class="font-semibold text-xl">
+                    Implementation
+                </h1>
+                <p>
+                    Our task is to implement pixel texture sampling of a triangle. The function is almost
+                    identical to part 2 supersampling triangle except for the fact that we are not taking
+                    a single uniform color, but rather pixel sample at every valid point in the triangle. The pixel
+                    sampling method is either <span class="italic">nearest neighbors</span> or <span class="italic">bilinear</span>
+                    and more will be discussed below. However to pixel sample corresponding to a texture image, we must
+                    first transform the points on the triangle in model space to UV texture space. This procedure is done
+                    by doing a barycentric interpolation on the vertices of the triangle in uv-space. In the sampling
+                    procedure, a level-0 mipmap is used containing the full width and the height of the texture and
+                    each u and v point is scaled by the mipmap width and height respectively. This allows access to the
+                    corresponding texels which returns the pixel values and is the output of the sampling method.
+                </p>
+                <h1 class="font-semibold text-xl">
+                    Pixel Sampling Methods
+                </h1>
+                <ol class="list-decimal ml-4">
+                    <li>
+                        <span class="font-bold">Nearest Neighbor Pixel Sampling</span>: Sampling based on the mipmap-0,
+                        width-and-height-scaled uv values corresponding the closest existing texel value in texture sample space.
+                    </li>
+                    <li>
+                        <span class="font-bold">Bilinear Pixel Sampling</span>: On the other hand, bilinear sampling is
+                        essentially avoiding picking a hard value in the texture sample space and instead interpolates
+                        on the colors of the 4 closest texels of <span class="font-bold">width-and-height scaled</span> (WH) uv point. This process of
+                        interpolation usually revolves around the using successive linear interpolations as described in
+                        lecture. But for my implementation, it is closely similar to the barycentric interpolation but
+                        instead interpolating on four nearest points of the WH uv point. It is still valid
+                        because the aforementioned four vertices are convex and thus has a similar property as the
+                        barycentric interpolation.
+                    </li>
+                </ol>
             </div>
         </div>
 
-        <div class="mt-10 bg-slate-300 p-5 rounded-lg max-w-5xl">
+        <div class="mt-10 bg-slate-300 p-5 rounded-lg max-w-6xl">
             <div class="text-3xl font-bold mb-3">
                 Section VI: "Level sampling" with mipmaps for texture mapping
             </div>

@@ -50,21 +50,34 @@
             Section I: Rasterization
         </div>
         <div class="">
-            <div class="mt-5 mb-5 bg-slate-100 p-5 rounded flex flex-col items-center gap-5 float-left mr-5 max-w-lg">
-                <img src="public/images/section1test6.png" class="rounded-lg max-w-lg max-h-lg lg:max-w-sm">
+            <div class="mt-5 mb-5 bg-slate-100 p-5 rounded flex flex-col items-center gap-5 mr-5">
+                <img src="public/images/super_sampling_1_per_pixel.png" class="rounded-lg">
                 <div class="max-w-lg">
                     This is from a build and a result of the rasterization of triangles.
-                    Here, we can see in the PixelTool that there exists some aliasing, jaggies in fact, when sampling.
+                    Here, we can see in the PixelTool that there exists some jaggies when sampling.
                 </div>
             </div>
-            <p class="text-xl">
+            <h1 class="font-semibold text-2xl">
+                How to rasterize the triangle
+            </h1>
+            <h2 class="font-semibold text-xl">
+                Checking For Bounds
+            </h2>
+            <p class="text-lg">
                 To rasterize a simple triangle from three given 2-dimensional vertices,
                 we first need to find the triangle's bounding box such that we can sample the required domain rather than the
                 entire framebuffer. This is done by taking the minimum x and y values as a starting point and floor it to map it
                 in the framebuffer, and then sample until we reach the maximum x and y values. This means that we are not checking anything that
-                goes beyond the triangle's bounds. Then once we sample for each point in the bounding box, each point (adjusted to the center
+                goes beyond the triangle's bounds and therefore faster than sampling the entire framebuffer.
+            </p>
+            <h2 class="font-semibold text-xl">
+                Three Line Test
+            </h2>
+            <p class="text-lg">
+                Then once we sample for each point in the bounding box, each point (adjusted to the center
                 by adding an offset of 0.5 to both x and y points) are then tested whether or not they lie inside the triangle via
-                the three line test. If the point passes the three-line test, then we fill the pixel.
+                the three line test. If the point passes the three-line test, then we fill the pixel corresponding to the
+                input color.
             </p>
         </div>
 
@@ -75,10 +88,71 @@
                 Section II: Antialiasing by Supersampling
             </div>
             <div class="">
-                <div class="mt-5 mb-5 bg-slate-100 p-5 rounded flex flex-col items-center gap-5 float-left mr-5 max-w-lg">
+                <div class="mt-5 mb-5 p-5 rounded flex flex-col items-center gap-5 float-left mr-5">
 <!--                    img-->
+                    <div class="grid grid-cols-2 grid-rows-2 gap-5 mb-5">
+                        <div class="p-5 bg-slate-100 rounded-lg">
+                            <img src="public/images/super_sampling_1_per_pixel.png" alt="pixel nearest 1x ss" class="rounded-lg">
+                            <p class="mt-2 text-lg">
+                                Supersampling 1 per pixel
+                            </p>
+                        </div>
+
+                        <div class="p-5 bg-slate-100 rounded-lg">
+                            <img src="public/images/super_sampling_4_per_pixel.png" alt="pixel nearest 1x ss" class="rounded-lg">
+                            <p class="mt-2 text-lg">
+                                Supersampling 4 per pixel
+                            </p>
+                        </div>
+
+                        <div class="p-5 bg-slate-100 rounded-lg">
+                            <img src="public/images/super_sampling_9_per_pixel.png" alt="pixel nearest 1x ss" class="rounded-lg">
+                            <p class="mt-2 text-lg">
+                                Supersampling 9 per pixel
+                            </p>
+                        </div>
+
+                        <div class="p-5 bg-slate-100 rounded-lg">
+                            <img src="public/images/super_sampling_16_per_pixel.png" alt="pixel nearest 1x ss" class="rounded-lg">
+                            <p class="mt-2 text-lg">
+                                Supersampling 16 per pixel
+                            </p>
+                        </div>
+
+                    </div>
+
                 </div>
-                <p class="text-xl">
+
+                <div class="p-5 bg-slate-100 rounded-lg mb-5">
+                    The outcomes of supersampling is rather remarkable – if we look at the corner of an resterized triangle, under the pixel inspector, we could see that for a sample rate of 1, the edges are all solid, no smooth transition at all. But as the sample rates increases, the pixels around edges start to have variation in their intensity, indicating smoother transitions and thus much smoother edges.
+
+                </div>
+
+                <h1 class="font-semibold text-2xl">
+                    How Supersampling works
+                </h1>
+                <h2 class="font-semibold text-xl">
+                    Why Supersampling is useful
+                </h2>
+                <p class="text-lg">
+                    When sampling without an antialiazing algorithm, it is very easy to get jaggy patterns
+                    because sometimes even if a small part of the pixel touches the reference,
+                    the entire pixel will be filled with that color. Supersampling is one of the useful
+                    ways of reducing such an effect.
+                </p>
+                <h2 class="font-semibold text-xl">
+                    Implementation of Supersampling
+                </h2>
+                <p class="text-lg">
+                     In our supersampling algorithm, we resizes the sample_buffer accordingly with the change of sample rate such that we get sample frequency of  sample_rate times original sample frequency. More specifically, originally we only sample once per pixel, but now within this pixel, we sample sample_rate times instead. After we stored our samples into the resized sample_buffer, for every sample_rate samples that are from the original pixel in sample_buffer, we take the average of the colors from these samples within this pixel, and pass the color to rgb_framebuffer_target, which is the pixel array that’s going to be displayed on screen.
+                </p>
+                <h2 class="font-semibold text-xl">
+                    Modification of Rasterizing Pipeline
+                </h2>
+                <p class="text-lg">
+                    To support the supersampling algorithm, we made several modifications to the rasterizing pipeline. Firstly, we changed the indexing of accessing sample_buffer's memory to accommodate the higher sample rate. We also scaled the reference triangle by sqrt(sample_rate) to ensure that we could sample at a higher frequency. Additionally, we modified the fill_pixel method to prevent lines and points from being distorted by the supersampling algorithm. Finally, we added an extra step to the resolve_to_framebuffer() function to average colors at regular intervals.
+
+                    The outcomes of supersampling is rather remarkable – if we look at the corner of an resterized triangle, under the pixel inspector, we could see that for a sample rate of 1, the edges are all solid, no smooth transition at all. But as the sample rates increases, the pixels around edges start to have variation in their intensity, indicating smoother transitions and thus much smoother edges.
 
                 </p>
             </div>
@@ -90,13 +164,16 @@
             </div>
             <div class="flex flex-col items-center">
                 <img src="public/images/section2.png" alt="cubeman jump" class="mt-5 mb-5 bg-slate-100 p-5 rounded flex flex-col items-center gap-5 mr-5">
-                <p class="text-xl">
+                <h1 class="font-semibold text-2xl">
+                    How cubeman is displayed
+                </h1>
+                <p class="text-lg">
                     This section is about the implementation of transform operations:
                     translate, scale, and rotate. In my cubeman, I have essentially changed the head, the arms,
                     and the legs to match a human skin. I have also changed the pants to a jeans color.
                     What cubeman is doing is just his girly jump pose with his right arm raised and his left
                     arm straight. His arms were raised by rotating about 90 degrees and then readjusting the
-                    translation of the arm. On the other hand the entire legs were rotated and the lower legs
+                    translation of the arm. On the other hand, the entire legs were rotated and the lower legs
                     were rotated more. Interesting to note that the transforms are conducted in
                     hierachies so even though the upper and lower legs are separate components,
                     they can nevertheless be transformed.
@@ -109,11 +186,13 @@
                 Section IV: Barycentric coordinates
             </div>
             <div class="">
-                <div class="mt-5 mb-5 bg-slate-100 p-5 rounded flex flex-col items-center gap-5 float-left mr-5 max-w-lg">
-                    <!--                    img-->
-                </div>
-                <p class="text-xl">
-
+                <img src="public/images/t4.png" alt="cubeman jump" class="mt-5 mb-5 bg-slate-100 p-5 rounded flex flex-col items-center gap-5 mr-5">
+                <h1 class="font-semibold text-2xl">
+                    What are Barycentric Coordinates?
+                </h1>
+                <p class="text-lg">
+                    Barycentric coordinate is essentially weighting the three vertices based on the given point, and the weight could be interpreted as how closely the point is relative to the three vertices.
+                    From the example barycentric interpolated triangle with vertices of colors red, green and blue, the colors closer to vertices have colors very similar to the vertices, but for points closer to the center of the triangle, they start to have tones from other two vertices mixed in, that’s because the weight from other colors gets larger.
                 </p>
             </div>
         </div>
@@ -125,31 +204,32 @@
             <div class="">
                 <div class="grid grid-cols-2 grid-rows-2 gap-5 mb-5">
                     <div class="p-5 bg-slate-100 rounded-lg">
-                        <img src="public/images/pixelNearest1.png" alt="pixel nearest 1x ss" class="rounded-lg">
-                        <p class="mt-2 text-sm">
-                            This is the Nearest Neighbor Pixel Sampling method with 1 sample per pixel. IN this
-                            sampling method, artifacts and aliasing are most prominent. You can observe that the latitude
-                            and longtitude markings are all cutoff.
+                        <img src="public/images/nn1.png" alt="pixel nearest 1x ss" class="rounded-lg">
+                        <p class="mt-2 text-lg">
+                            This is the Nearest Neighbor Pixel Sampling method with 1 sample per pixel. In this
+                            sampling method, artifacts and aliasing are most prominent among the four
+                            sampling methods. You can see the jaggies from the trademark clearly visible.
                         </p>
                     </div>
                     <div class="p-5 bg-slate-100 rounded-lg">
-                        <img src="public/images/pixelNearest16.png" alt="pixel nearest 16x ss" class="rounded-lg">
-                        <p class="mt-2 text-sm">
+                        <img src="public/images/nn16.png" alt="pixel nearest 16x ss" class="rounded-lg">
+                        <p class="mt-2 text-lg">
                             This is the Nearest Neighbor Pixel Sampling method with 16 sample per pixel. In this
                             sampling method, artifacts and aliasing are pretty much non-existent due to applied
-                            antialiasing.
+                            antialiasing. However, it is visible that the trademark logo is sharper than the bilinear
+                            methods.
                         </p>
                     </div>
                     <div class="p-5 bg-slate-100 rounded-lg">
-                        <img src="public/images/pixelBilinear1.png" alt="pixel bilinear 1x ss" class="rounded-lg">
-                        <p class="mt-2 text-sm">
+                        <img src="public/images/b1.png" alt="pixel bilinear 1x ss" class="rounded-lg">
+                        <p class="mt-2 text-lg">
                             This is the bilinear Pixel Sampling method. This sampling method is yields less visible artifacts than the Nearest neighbor pixel sampling
                             at 1 sample per pixel. The level of fidelity and detail is somewhat on par with the top right sampling method.
                         </p>
                     </div>
                     <div class="p-5 bg-slate-100 rounded-lg">
-                        <img src="public/images/pixelBilinear16.png" alt="pixel bilinear 16x ss" class="rounded-lg">
-                        <p class="mt-2 text-sm">
+                        <img src="public/images/b16.png" alt="pixel bilinear 16x ss" class="rounded-lg">
+                        <p class="mt-2 text-lg">
                             This is the Bilinear Sampling method with 16 sample per pixel. In this
                             sampling method, artifacts and aliasing are reduced to a minimum and there is a
                             slight difference in that it is more blurred than the bilinear 1 sample per pixel sampling
@@ -162,29 +242,37 @@
                     and the biggest difference between the two pixel sampling method because in the case of nearest neighbors,
                     we are still sampling too much to the point where artifacts and aliasing still occurs. For bilinear
                     filtering, it is similar to applying a box filter in that the process of interpolating reduces high
-                    frequency signals in sampling the texture.
+                    frequency signals in sampling the texture. The large difference between nearest neighbors and
+                    bilinear sampling is when comparing a textured image that includes no supersampling as
+                    This is because for the bilinear interpolation method, it does not take a hard texel value
+                    but rather interpolates between neighboring texel values.
                 </div>
                 <h1 class="font-semibold text-2xl">
                     What is Pixel Sampling?
                 </h1>
                 <p>
-                    Pixel Sampling is essentially rendering an object and have its pixels correspond to a
-                    texture image that is then embedded to the object which gets displayed.
+                    Pixel Sampling is essentially taking a source image or object and returns an rgb values, as well as
+                    other useful attributes.
+                    In this case, we are talking about Texture Pixel Sampling, which is essentially taking a given source
+                    object with texture applied to it and get its rgb+other values which involves sampling texture to
+                    be displayed.
                 </p>
-                <h1 class="font-semibold text-xl">
+                <h1 class="font-semibold text-xl mt-5">
                     Implementation
                 </h1>
-                <p>
-                    Our task is to implement pixel texture sampling of a triangle. The function is almost
-                    identical to part 2 supersampling triangle except for the fact that we are not taking
+                <p style="white-space: pre-line">Our task is to implement pixel texture sampling of a triangle.
+                    The function is almost identical to part 2 supersampling triangle except for the fact that we are not taking
                     a single uniform color, but rather pixel sample at every valid point in the triangle. The pixel
                     sampling method is either <span class="italic">nearest neighbors</span> or <span class="italic">bilinear</span>
-                    and more will be discussed below. However to pixel sample corresponding to a texture image, we must
+                    and more will be discussed below.
+
+                    However to pixel sample corresponding to a texture image, we must
                     first transform the points on the triangle in model space to UV texture space. This procedure is done
                     by doing a barycentric interpolation on the vertices of the triangle in uv-space. In the sampling
                     procedure, a level-0 mipmap is used containing the full width and the height of the texture and
                     each u and v point is scaled by the mipmap width and height respectively. This allows access to the
                     corresponding texels which returns the pixel values and is the output of the sampling method.
+
                 </p>
                 <h1 class="font-semibold text-xl">
                     Pixel Sampling Methods
@@ -213,10 +301,76 @@
                 Section VI: "Level sampling" with mipmaps for texture mapping
             </div>
             <div class="">
-                <div class="mt-5 mb-5 bg-slate-100 p-5 rounded flex flex-col items-center gap-5 float-left mr-5 max-w-lg">
-                    <!--                    img-->
+                <div class="grid grid-cols-2 grid-rows-2 gap-5 mb-5">
+                    <div class="p-5 bg-slate-100 rounded-lg">
+                        <img src="public/images/task6_levelzero_nearest2.png" alt="pixel nearest 1x ss" class="rounded-lg">
+                        <p class="mt-2 text-lg">
+                            Level Zero Mipmap Sampling and Nearest neighbor pixel sampling
+                        </p>
+                    </div>
+
+                    <div class="p-5 bg-slate-100 rounded-lg">
+                        <img src="public/images/task6_nearestlevel_nearest2.png" alt="pixel nearest 1x ss" class="rounded-lg">
+                        <p class="mt-2 text-lg">
+                            Nearest Neighbor Level Sampling with Nearest neighbor pixel sampling
+                        </p>
+                    </div>
+
+                    <div class="p-5 bg-slate-100 rounded-lg">
+                        <img src="public/images/task6_bilinearlevel_nearest2.png" alt="pixel nearest 1x ss" class="rounded-lg">
+                        <p class="mt-2 text-lg">
+                            Linear Interpolation Level Sampling with Nearest Neighbor Pixel Sampling
+                        </p>
+                    </div>
+
+                    <div class="p-5 bg-slate-100 rounded-lg">
+                        <img src="public/images/task6_bilinearlevel_bilinear2.png" alt="pixel nearest 1x ss" class="rounded-lg">
+                        <p class="mt-2 text-lg">
+                            Linear Interpolation Level Sampling with Bilinear Pixel Sampling. Also Known
+                            as Trilinear.
+                        </p>
+                    </div>
                 </div>
-                <p class="text-xl">
+                <h1 class="font-semibold text-xl">
+                    What is Level Sampling?
+                </h1>
+                <p class="text-lg">
+                    Computing and scaling textures real-time could be costly, and level mapping basically precomputes several textures of different scales. During rendering, when a level of texture is needed, we just find the closest two levels of precomputed textures(mipmap) and interpolate them or simply take the nearest mipmap level to get the desired color value.
+                </p>
+                <h1 class="font-semibold text-xl">
+                    Implementation
+                </h1>
+
+                <p class="text-lg" >
+                    In our implementation, we first computed the corresponding direction vector we walk on the texture space as we walk one step in the screen space, then we take the jacobian relating changing rate between two directions in screen space and two directions in the texture space. With that, we then computed the level of the texture that we need. And depending on the input parameter, we either find the nearest level in the mipmap and take it as the final color, or find two nearest levels in the mipmap and take weighted average of them(linear interpolation) as a final result.
+                </p>
+
+                <h1 class="font-semibold text-xl">
+                    Tradeoffs of Visual Fidelity, Memory Usage, and Speed
+                </h1>
+                <p class="text-lg" style="white-space: pre-line">
+                    In terms of trade-offs between different sampling methods, it could be summarized with the following comparison.
+
+                    Speed: supersampling <= level sampling < pixel sampling
+                    Antialiazing: level sampling < supersampling < pixel sampling
+                    Memory usage: pixel sampling ≈ level sampling < supersampling
+                </p>
+                <p class="text-lg" style="white-space: pre-line">
+                    More specifically, when it comes to speed, if we limit the number of samples per pixel to 4, then the speeds between supersampling and level sampling are about the same.
+
+                    However, if we want to achieve supersampling’s fullpower and increase the sampling rate to 16 samples per pixel, then supersampling is much slower than level sampling.
+
+                    Pixel sampling is easily the fastest among all three.
+
+                    In terms of antialiazing, supersampling has generally a better performance than level sampling, while pixel sampling, especially bilinear pixel sampling, has a much better improvement than supersampling.
+
+                    However, bilinear pixel-sampling sometimes over-blurres the image, resulting in a less-sharp image than supersampling.
+
+                    For memory usage, supersampling takes more memory when the texture file has a small resolution, because we need to rescale the buffer by sample_rate times, and the sample_buffer depends on the screen size, so if screen size is larger than texture resolution, then supersampling would take much higher memery usage because sample_rate is larger than one.
+
+                    Level sampling only takes 4/3 times texture’s resolution storage.
+
+                    However, if texture size is much higher than the screen size, then it is possible that 4/3 times texture size is still larger than 16 times sample_buffer size, in this case level sampling takes up more memory.
 
                 </p>
             </div>
